@@ -10,16 +10,16 @@
 #only "#####" will be deleted/replaced from the graderFile
 #it's up to the user to pass in the right files and make sure the languages match
 
+
+import getopt
+import sys
+
 #
 #Finds the "#####" marker in the grader file
 #@param _Lines: lines from the file
 #@param _position: position tracker which will hold the position of the first '#' in the '#####'
 #@return _position has the position of the first # after return
 #
-import getopt
-import sys
-
-
 def findGraderCode(_Lines, _position):
     counter = 0
     for line in _Lines:
@@ -27,8 +27,8 @@ def findGraderCode(_Lines, _position):
             if char == '#':
                 counter += 1  # inc counter
                 if counter == 4:  # when we see 5 #'s in a row, leave loop
-                    _position -= 4 #get position of the first #?
-                    return
+                    _position -= 3 #get position of the first #?
+                    return _position
             else:
                 counter = 0  # reset counter
             _position += 1  # keep track of position
@@ -49,7 +49,7 @@ def makeNewFile(_Lines, _inputLines, _position, _newFile):
     copied = False
     for lines in _Lines:
         for char in lines:
-            if position2 < _position and position2 > _position + 4:  # as long as we aren't at any characters of #####
+            if position2 < _position or position2 > _position + 4:  # as long as we aren't at any characters of #####
                 _newFile.write(char)  # copy the code over one char at a time
             elif copied != True:  # if we have not copied yet
                 copied = True  # make sure we don't copy again
@@ -59,25 +59,31 @@ def makeNewFile(_Lines, _inputLines, _position, _newFile):
 
 
 #main code:
-def main(argv):
-    print("yay")
-    argList = sys.argv[1:] #list of cmd line args past name of prog
+def main():
+    #argList = sys.argv #list of cmd line args past name of prog
 
     #vars for paths we will get from cmd line
     inputPath = ''
     graderPath = ''
     resultPath = ''
 
+
     try:
-        args, values = getopt.getopt(argList, "h:igr:", ["Help", "Input", "Grader", "Result"]) #get args
+        args, values = getopt.getopt(sys.argv[1:], "hi:g:r:", ["Help", "Input", "Grader", "Result"]) #get args
         for curArg, curVal in args:
             if curArg in ("-h", "--Help"):
                 print ("Usage: textToCompile.py -i <inputFilePath> -g <graderFilePath -r <resultFilePath>")
             elif curArg in ("-i", "--Input"):
+                print("yay1")
+
                 inputPath = curVal
             elif curArg in ("-g", "--Grader"):
+                print("yay2")
+
                 graderPath = curVal
             elif curArg in ("-r", "--Result"):
+                print("yay3")
+
                 resultPath = curVal
 
     except getopt.GetoptError:
@@ -85,17 +91,22 @@ def main(argv):
         sys.exit(0)
 
     graderFile = open(graderPath, 'r')
-    Lines = graderFile.readLines() #get grader lines
+    Lines = graderFile.readlines() #get grader lines
 
     position = 0
-    findGraderCode(Lines, position) #get the position of the first #
+    position = findGraderCode(Lines, position) #get the position of the first #
 
     inputFile = open(inputPath, 'r') #open input file (code to be graded)
-    inputLines = inputFile.readLines() #get input lines
+    inputLines = inputFile.readlines() #get input lines
 
     newFile = open(resultPath, 'w') #open the grader file to write to it instead
 
     makeNewFile(Lines, inputLines, position, newFile) #copy input and grader into the new file
 
-    #run the new file through a compiler/grader
+    inputFile.close()
+    graderFile.close()
+    newFile.close()
 
+    #run the new file through a compiler/grader
+if __name__ == "__main__":
+    main()
